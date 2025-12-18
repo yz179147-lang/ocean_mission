@@ -1,0 +1,606 @@
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Calculator, CheckCircle, HelpCircle, Map, Clock, PieChart, ShoppingCart, Activity, Anchor, BookOpen, User, DollarSign, Database } from 'lucide-react';
+
+// --- 資料與題庫 (經過優化與參數調整) ---
+
+const problemSets = [
+  {
+    id: 1,
+    title: "星際列車的時刻表危機",
+    icon: <Clock className="w-6 h-6" />,
+    story: "西元 2050 年，小光一家人住在「月球基地」，計畫週末前往「火星渡假村」。爸爸把時刻表交給小光規劃。必須在中午 12:00 以前抵達火星趕上自助午餐。",
+    visualType: "table_train",
+    questions: [
+      { q: "請問搭乘「光速號」從月球飛到火星，總共需要花費幾小時幾分鐘？", a: "1 小時 40 分鐘 (09:30 到 11:30 是 2 小時，提早 20 分鐘)" },
+      { q: "請問搭乘「彗星號」飛行時間是幾小時幾分鐘？它比「光速號」慢了多少分鐘？", a: "3 小時。慢了 80 分鐘 (3小時 = 180分，1小時40分 = 100分)" },
+      { q: "如果小光一家人（2 位大人、1 位小孩）選擇搭乘「彗星號」，購買來回票（去和回都搭這班車），總共需要花多少錢？", a: "1700 元 (單程總和 850 元 x 2 趟)" },
+      { q: "爸爸說：「如果飛行時間少於 2 小時，我就願意多花錢。」請問光速號符合要求嗎？", a: "符合 (1小時40分 < 2小時)" },
+      { q: "回程必須趕上 16:00 的電影。若搭乘「光速號」（飛行時間與去程相同），最晚幾點幾分從火星出發？", a: "14:20 (下午 2 點 20 分)" }
+    ]
+  },
+  {
+    id: 2,
+    title: "魔法藥水店的庫存盤點",
+    icon: <Database className="w-6 h-6" />,
+    story: "古靈精怪先生正在盤點倉庫。巨大的玻璃缸裡裝滿了「史萊姆黏液」。昨天進貨時，大水缸原本有 8 公升。早上賣給石內卜教授 2 公升 500 毫升，下午榮恩打破瓶子流失了 450 毫升。",
+    visualType: "chart_potion",
+    questions: [
+      { q: "早上賣給石內卜教授之後，水缸裡還剩下幾毫升的史萊姆黏液？", a: "5500 毫升 (8000 - 2500)" },
+      { q: "扣掉下午打破流失的部分，現在水缸裡最後剩下多少毫升的黏液？", a: "5050 毫升 (5500 - 450)" },
+      { q: "店長準備了容量為 900 毫升的中型玻璃瓶。請問剩下的黏液，最多可以「裝滿」幾瓶？(試著用乘法估算)", a: "5 瓶 (900 x 5 = 4500，還夠；900 x 6 = 5400，不夠)" },
+      { q: "承上題，裝滿之後，水缸裡還會剩下多少毫升的黏液無法裝滿一瓶？", a: "550 毫升 (5050 - 4500)" },
+      { q: "裝滿的每瓶賣 200 元，剩下的零頭以 1 毫升 1 元賣掉。請問全部賣光可以賺多少錢？", a: "1550 元 (5瓶x200 + 550元)" }
+    ]
+  },
+  {
+    id: 3,
+    title: "營養午餐的披薩派對",
+    icon: <PieChart className="w-6 h-6" />,
+    story: "三年五班慶祝表現優良，訂了 5 大盒披薩。每一盒都要切成一樣大小的 8 片。全班共有 28 位學生，加上 1 位老師和 1 位實習老師，每個人都要分到一片。",
+    visualType: "illustration_pizza",
+    questions: [
+      { q: "請問 5 大盒披薩總共被切成了幾片？", a: "40 片 (5 x 8)" },
+      { q: "教室裡總共有多少人要吃披薩？", a: "30 人 (28學生 + 1老師 + 1實習)" },
+      { q: "每人拿走一片後，還剩下幾片披薩？", a: "10 片 (40 - 30)" },
+      { q: "這些剩下的披薩是幾分之幾盒？(提示：一盒有8片)", a: "10/8 盒 或 1又2/8 盒 (或 1又1/4盒)" },
+      { q: "隔壁班體育老師要吃掉「半盒」(也就是 4 片)。剩下的披薩夠不夠給他吃？", a: "夠 (剩下10片，大於4片)" }
+    ]
+  },
+  {
+    id: 4,
+    title: "開心農場的圍籬工程",
+    icon: <Map className="w-6 h-6" />,
+    story: "王爺爺的長方形農地長 24 公尺、寬 16 公尺。他要在四周每隔 4 公尺打一根木樁。農地正中間還劃出一塊邊長 5 公尺的正方形區域種草莓。",
+    visualType: "map_farm",
+    questions: [
+      { q: "請問這塊長方形農地外圍的周長是多少公尺？", a: "80 公尺 ((24+16) x 2)" },
+      { q: "如果要圍滿農地四周，每隔 4 公尺打一根木樁，請問總共需要幾根木樁？", a: "20 根 (80 ÷ 4，封閉圖形不用加1)" },
+      { q: "中間的正方形草莓園也需要圍一圈小圍籬，請問草莓園的周長是多少公尺？", a: "20 公尺 (5 x 4)" },
+      { q: "鋪上防草布的區域周長比農地外圍的周長短了多少？", a: "60 公尺 (80 - 20)" },
+      { q: "圍籬材料費 1 公尺 50 元。圍最外面那一圈大長方形需要花多少錢？", a: "4000 元 (80 x 50)" }
+    ]
+  },
+  {
+    id: 5,
+    title: "週年慶的集點大作戰",
+    icon: <ShoppingCart className="w-6 h-6" />,
+    story: "快樂玩具城集點活動：「消費滿 100 元獲得 1 點。集滿 10 點可兌換 100 元折價券。」小明想買樂高，妹妹想要洋娃娃。",
+    visualType: "card_toys",
+    questions: [
+      { q: "請問買一組 2400 元的樂高積木，總共可以獲得幾點點數？", a: "24 點" },
+      { q: "這些點數可以兌換幾張 100 元的折價券？", a: "2 張 (用掉 20 點)" },
+      { q: "承上題，兌換完折價券後，還會剩下幾點點數沒用到？", a: "4 點" },
+      { q: "接下來買洋娃娃（800元），使用了所有折價券。還需要拿出多少「現金」？", a: "600 元 (800 - 200)" },
+      { q: "如果一開始三樣玩具(2400+800+1200)一起結帳，總共可以拿到幾點？", a: "44 點 (總金額4400元)" }
+    ]
+  },
+  {
+    id: 6,
+    title: "馬拉松大賽的補給站",
+    icon: <Activity className="w-6 h-6" />,
+    story: "城市馬拉松全長 10 公里。起點出發後，第1補給站在2公里處。第2補給站距離第1補給站2500公尺。第3補給站距離終點只剩1500公尺。",
+    visualType: "chart_marathon",
+    questions: [
+      { q: "請將 10 公里換算成公尺。", a: "10000 公尺" },
+      { q: "請問第 2 補給站距離起點多少公尺？", a: "4500 公尺 (2000 + 2500)" },
+      { q: "選手跑到第 2 補給站時，距離終點還有多遠？", a: "5500 公尺 (10000 - 4500)" },
+      { q: "第 3 補給站和第 2 補給站之間相距多少公尺？", a: "4000 公尺 (8500 - 4500)" },
+      { q: "小傑停在 6000 公尺處休息。請問他「已經通過」第 2 補給站了嗎？距離第 2 補給站多遠？", a: "已經通過 (6000 > 4500)，距離 1500 公尺" }
+    ]
+  },
+  {
+    id: 7,
+    title: "小學徒的麵包烘焙課",
+    icon: <BookOpen className="w-6 h-6" />,
+    story: "胖胖麵包店要做 8 個巨無霸菠蘿麵包。單個配方：糖 300 克，奶油比糖少 50 克，麵粉是糖的 5 倍。",
+    visualType: "card_recipe",
+    questions: [
+      { q: "請問做一個巨無霸菠蘿麵包，需要多少公克的麵粉？", a: "1500 公克 (300 x 5)" },
+      { q: "請問做一個巨無霸菠蘿麵包，需要多少公克的奶油？", a: "250 公克 (300 - 50)" },
+      { q: "做完這 8 個麵包後，一袋 10 公斤的麵粉會剩下多少公克？(注意單位)", a: "不夠用！(需要12000g，只有10000g，缺2000g)" },
+      { q: "烤箱一次只能烤 2 個，每次 25 分鐘。烤完 8 個麵包最少需要幾分鐘？", a: "100 分鐘 (4 批 x 25)" },
+      { q: "承上題，下午 2:00 開始烤，中間無休息，最後一批出爐時間是？", a: "15:40 (下午 3 點 40 分)" }
+    ]
+  },
+  {
+    id: 8,
+    title: "圖書館的搬書大挑戰",
+    icon: <BookOpen className="w-6 h-6" />,
+    story: "圖書館搬遷。A櫃繪本8層每層45本。B櫃漫畫6層每層60本。C櫃小說總共350本。每位同學的箱子最多裝40本。",
+    visualType: "table_books",
+    questions: [
+      { q: "請問 A 櫃裡的繪本總共有幾本？", a: "360 本 (45 x 8)" },
+      { q: "請問 A 櫃的書比 B 櫃的書多還是少？相差幾本？", a: "一樣多 (360 vs 360，相差0)" },
+      { q: "如果要把 C 櫃的小說全部裝箱，最少需要幾個箱子才夠？", a: "9 個箱子 (350 ÷ 40 = 8...30，餘數要多一箱)" },
+      { q: "小明搬 B 櫃漫畫已搬 5 箱(滿)，還剩下幾本沒搬？", a: "160 本 (360 - 200)" },
+      { q: "請全班30人+2老師喝珍奶(45元)。2000元夠不夠？找回多少？", a: "夠，找回 560 元 (技巧：30x45 + 2x45 = 1350 + 90 = 1440)" }
+    ]
+  },
+  {
+    id: 9,
+    title: "勇者的冒險與金幣",
+    icon: <DollarSign className="w-6 h-6" />,
+    story: "勇者阿瑞原本有 500 金幣。事件1：買3瓶藥水每瓶60。事件2：寶箱將金幣變為當下的一半。事件3：付路費200。",
+    visualType: "illustration_rpg",
+    questions: [
+      { q: "經過「事件一」後，阿瑞買藥水花掉多少？還剩多少？", a: "花 180，剩 320" },
+      { q: "經過「事件二」時，寶箱裡有多少枚金幣？(寶箱內有「當時身上金幣的一半」)", a: "160 枚 (320的一半)" },
+      { q: "拿走寶箱金幣後，阿瑞現在身上總共有多少枚金幣？", a: "480 枚 (320 + 160)" },
+      { q: "經過「事件三」付完過路費後，阿瑞最後剩下多少枚金幣？", a: "280 枚 (480 - 200)" },
+      { q: "買傳說寶劍(1000)還差多少枚金幣？", a: "720 枚 (1000 - 280)" }
+    ]
+  },
+  {
+    id: 10,
+    title: "水族館的餵食秀",
+    icon: <Anchor className="w-6 h-6" />,
+    story: "鯨鯊點點每天吃 18 公斤。兩隻海豚每天「共」吃 12 公斤。倉庫剩下 150 公斤魚，要撐一星期(7天)。",
+    visualType: "chart_aquarium",
+    questions: [
+      { q: "三隻動物每天「總共」要吃掉多少公斤的魚？", a: "30 公斤 (18 + 12)" },
+      { q: "一個星期下來，這三隻動物總共需要吃掉多少公斤的魚？", a: "210 公斤 (30 x 7)" },
+      { q: "倉庫的 150 公斤魚夠不夠？缺多少？", a: "不夠，缺 60 公斤" },
+      { q: "週日表演成功多給2公斤(兩隻平分)。當天每隻海豚吃幾公斤？", a: "7 公斤 ((12+2) ÷ 2)" },
+      { q: "點點下個月食量變成原來的 2 倍少 5 公斤。是多少？", a: "31 公斤 (18 x 2 - 5)" }
+    ]
+  }
+];
+
+// --- 視覺化組件 (Canvas Implementation via SVG/HTML) ---
+
+const VisualContainer = ({ children, title }: { children: React.ReactNode, title: string }) => (
+  <div className="bg-white p-4 rounded-lg shadow-sm border-2 border-slate-200 my-4">
+    <div className="text-sm font-bold text-slate-500 mb-2 uppercase tracking-wide">{title}</div>
+    <div className="flex justify-center items-center overflow-x-auto">
+      {children}
+    </div>
+  </div>
+);
+
+// 1. 火車時刻表
+const TrainTable = () => (
+  <div className="w-full max-w-md">
+    <table className="w-full text-sm text-left border-collapse">
+      <thead>
+        <tr className="bg-blue-100">
+          <th className="border p-2">車次名稱</th>
+          <th className="border p-2">出發 (月球)</th>
+          <th className="border p-2">抵達 (火星)</th>
+          <th className="border p-2">成人票</th>
+          <th className="border p-2">兒童票</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td className="border p-2 font-bold text-blue-600">光速號</td>
+          <td className="border p-2">09:30</td>
+          <td className="border p-2">11:10</td>
+          <td className="border p-2">$500</td>
+          <td className="border p-2">$250</td>
+        </tr>
+        <tr className="bg-slate-50">
+          <td className="border p-2 font-bold text-green-600">彗星號</td>
+          <td className="border p-2">08:15</td>
+          <td className="border p-2">11:15</td>
+          <td className="border p-2">$350</td>
+          <td className="border p-2">$150</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+);
+
+// 2. 藥水水缸
+const PotionChart = () => (
+  <div className="flex items-end gap-8 h-48">
+    <div className="relative w-24 h-40 border-2 border-slate-400 rounded-b-lg bg-slate-100 flex flex-col justify-end overflow-hidden">
+      <div className="absolute top-2 right-1 text-xs text-slate-400">8L (滿)</div>
+      <div className="w-full h-[60%] bg-green-400 opacity-80 border-t border-green-500 animate-pulse relative">
+         <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs">目前存量</span>
+      </div>
+      <div className="absolute -bottom-6 w-full text-center text-xs font-bold">大水缸</div>
+    </div>
+    <div className="flex gap-2">
+       {[1,2,3].map(i => (
+         <div key={i} className="w-8 h-12 border border-slate-300 rounded-b-md bg-green-200 flex items-center justify-center">
+           <span className="text-[10px]">900ml</span>
+         </div>
+       ))}
+       <div className="w-8 h-12 flex items-center justify-center text-slate-400 text-xs">...</div>
+    </div>
+  </div>
+);
+
+// 3. 披薩圖
+const PizzaIllustration = () => (
+  <div className="flex flex-wrap justify-center gap-4">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <div key={i} className="relative w-20 h-20">
+         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+           <circle cx="50" cy="50" r="48" fill="#FEF3C7" stroke="#D97706" strokeWidth="2" />
+           {/* Slices lines */}
+           <line x1="50" y1="2" x2="50" y2="98" stroke="#D97706" strokeWidth="1" />
+           <line x1="2" y1="50" x2="98" y2="50" stroke="#D97706" strokeWidth="1" />
+           <line x1="16" y1="16" x2="84" y2="84" stroke="#D97706" strokeWidth="1" />
+           <line x1="84" y1="16" x2="16" y2="84" stroke="#D97706" strokeWidth="1" />
+           {/* Pepperoni */}
+           <circle cx="30" cy="30" r="4" fill="#EF4444" />
+           <circle cx="70" cy="70" r="4" fill="#EF4444" />
+           <circle cx="70" cy="30" r="4" fill="#EF4444" />
+           <circle cx="30" cy="70" r="4" fill="#EF4444" />
+         </svg>
+         <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold text-slate-600">Box {i}</span>
+      </div>
+    ))}
+  </div>
+);
+
+// 4. 農場地圖
+const FarmMap = () => (
+  <div className="relative w-64 h-48 bg-[#e2e8f0] border-4 border-dashed border-amber-700 p-4 flex items-center justify-center">
+    {/* Farm Label */}
+    <div className="absolute top-1 left-2 text-xs text-amber-800 font-bold">長 24m</div>
+    <div className="absolute left-1 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-amber-800 font-bold">寬 16m</div>
+    
+    {/* Wood Stakes Visualization */}
+    <div className="absolute top-0 left-0 w-full h-full flex justify-between">
+       <div className="h-full border-l-4 border-dotted border-amber-900/30"></div>
+       <div className="h-full border-r-4 border-dotted border-amber-900/30"></div>
+    </div>
+
+    {/* Strawberry Patch */}
+    <div className="w-20 h-20 bg-red-100 border-2 border-red-500 flex flex-col items-center justify-center relative">
+      <span className="text-2xl">🍓</span>
+      <span className="text-[10px] font-bold text-red-700">草莓園</span>
+      <span className="text-[8px] text-red-600">邊長 5m</span>
+    </div>
+  </div>
+);
+
+// 5. 玩具卡片
+const ToyCards = () => (
+  <div className="flex flex-wrap gap-4 justify-center">
+    <div className="w-32 bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col items-center">
+      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">🧱</div>
+      <div className="text-sm font-bold">樂高積木</div>
+      <div className="text-blue-600 font-bold">$2400</div>
+    </div>
+    <div className="w-32 bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col items-center">
+      <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-2">🎀</div>
+      <div className="text-sm font-bold">洋娃娃</div>
+      <div className="text-pink-600 font-bold">$800</div>
+    </div>
+    <div className="w-32 bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col items-center">
+      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-2">🤖</div>
+      <div className="text-sm font-bold">變形金剛</div>
+      <div className="text-yellow-600 font-bold">$1200</div>
+    </div>
+  </div>
+);
+
+// 6. 馬拉松圖表
+const MarathonChart = () => (
+  <div className="w-full max-w-lg pt-6 pb-2 px-2">
+    <div className="relative w-full h-2 bg-slate-300 rounded-full">
+      {/* Start */}
+      <div className="absolute -top-1 left-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+      <div className="absolute -top-6 left-0 text-xs font-bold text-green-700">起點</div>
+      
+      {/* Checkpoint 1 (2km = 20%) */}
+      <div className="absolute -top-1 left-[20%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+      <div className="absolute top-4 left-[20%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center">補給1<br/>2km</div>
+
+      {/* Checkpoint 2 (2 + 2.5 = 4.5km = 45%) */}
+      <div className="absolute -top-1 left-[45%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+      <div className="absolute -top-8 left-[45%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center">補給2<br/>(前進2500m)</div>
+
+      {/* Checkpoint 3 (10 - 1.5 = 8.5km = 85%) */}
+      <div className="absolute -top-1 left-[85%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+      <div className="absolute top-4 left-[85%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center">補給3<br/>(剩1500m)</div>
+
+      {/* End */}
+      <div className="absolute -top-1 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+      <div className="absolute -top-6 right-0 text-xs font-bold text-red-700">終點</div>
+    </div>
+    <div className="mt-8 text-center text-xs text-slate-500">全程 10 公里</div>
+  </div>
+);
+
+// 7. 食譜卡
+const RecipeCard = () => (
+  <div className="bg-[#fffbeb] border border-amber-200 p-4 rounded-lg shadow-sm max-w-sm w-full font-serif relative">
+    <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-3 py-1 text-xs rounded-full font-sans">師傅的祕密配方</div>
+    <h3 className="text-center font-bold text-amber-900 mt-2 mb-4 text-lg border-b border-amber-200 pb-2">巨無霸菠蘿麵包</h3>
+    <ul className="space-y-3 text-sm text-amber-900">
+      <li className="flex justify-between items-center">
+        <span>🍬 糖</span>
+        <span className="font-bold">300 公克</span>
+      </li>
+      <li className="flex justify-between items-center">
+        <span>🧈 奶油</span>
+        <span className="font-bold">比糖少 50 公克</span>
+      </li>
+      <li className="flex justify-between items-center">
+        <span>🌾 麵粉</span>
+        <span className="font-bold">糖的 5 倍</span>
+      </li>
+    </ul>
+  </div>
+);
+
+// 8. 書櫃表格
+const BooksTable = () => (
+  <table className="w-full text-sm text-left border-collapse bg-white">
+    <thead>
+      <tr className="bg-indigo-100">
+        <th className="border border-indigo-200 p-2">書櫃代號</th>
+        <th className="border border-indigo-200 p-2">種類</th>
+        <th className="border border-indigo-200 p-2">層數</th>
+        <th className="border border-indigo-200 p-2">每層本數</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-indigo-100 p-2 font-bold text-center">A</td>
+        <td className="border border-indigo-100 p-2">繪本</td>
+        <td className="border border-indigo-100 p-2 text-center">8</td>
+        <td className="border border-indigo-100 p-2 text-center">45</td>
+      </tr>
+      <tr>
+        <td className="border border-indigo-100 p-2 font-bold text-center">B</td>
+        <td className="border border-indigo-100 p-2">漫畫</td>
+        <td className="border border-indigo-100 p-2 text-center">6</td>
+        <td className="border border-indigo-100 p-2 text-center">60</td>
+      </tr>
+      <tr>
+        <td className="border border-indigo-100 p-2 font-bold text-center">C</td>
+        <td className="border border-indigo-100 p-2">小說</td>
+        <td className="border border-indigo-100 p-2 text-center text-slate-400">-</td>
+        <td className="border border-indigo-100 p-2 text-center font-bold text-indigo-600">總共 350</td>
+      </tr>
+    </tbody>
+  </table>
+);
+
+// 9. RPG 介面
+const RPGInterface = () => (
+  <div className="w-full max-w-md bg-slate-800 rounded-lg p-4 text-white font-mono border-4 border-slate-600">
+    <div className="flex justify-between items-center mb-4 border-b border-slate-600 pb-2">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">勇</div>
+        <span>阿瑞 LV.3</span>
+      </div>
+      <div className="text-yellow-400">💰 500 G</div>
+    </div>
+    <div className="space-y-2 text-sm">
+      <div className="bg-slate-700 p-2 rounded text-green-300">
+        &gt; 遇到史萊姆商人！<br/>
+        &gt; 藥水特價：$60/瓶
+      </div>
+      <div className="bg-slate-700 p-2 rounded text-yellow-300">
+        &gt; 發現寶箱！<br/>
+        &gt; 內容：目前金幣的一半
+      </div>
+      <div className="bg-slate-700 p-2 rounded text-red-300">
+        &gt; 大魔王擋路！<br/>
+        &gt; 過路費：$200
+      </div>
+    </div>
+  </div>
+);
+
+// 10. 水族館圖表
+const AquariumChart = () => (
+  <div className="flex justify-around items-end w-full max-w-md h-40 bg-blue-50 rounded-xl border border-blue-200 p-4 relative overflow-hidden">
+    {/* Background Water */}
+    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-blue-100 -z-10 rounded-b-xl"></div>
+    
+    {/* Whale Shark */}
+    <div className="flex flex-col items-center">
+      <div className="text-xs font-bold text-blue-800 mb-1">鯨鯊點點</div>
+      <div className="w-24 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold relative">
+        <span className="z-10">18kg</span>
+        <div className="absolute right-0 w-8 h-8 bg-blue-500 rounded-full translate-x-3"></div> {/* Tail */}
+      </div>
+      <div className="text-[10px] text-blue-600 mt-1">每天食量</div>
+    </div>
+
+    {/* Dolphins */}
+    <div className="flex flex-col items-center">
+      <div className="text-xs font-bold text-blue-800 mb-1">海豚雙人組</div>
+      <div className="flex gap-1">
+        <div className="w-12 h-8 bg-cyan-400 rounded-full flex items-center justify-center text-white text-xs">跳</div>
+        <div className="w-12 h-8 bg-cyan-400 rounded-full flex items-center justify-center text-white text-xs">波</div>
+      </div>
+      <div className="bg-white/80 px-2 py-1 rounded-full text-xs font-bold text-cyan-700 mt-1 shadow-sm">
+        共 12 kg
+      </div>
+    </div>
+  </div>
+);
+
+
+const App = () => {
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [revealedAnswers, setRevealedAnswers] = useState<{[key: string]: boolean}>({});
+
+  const currentSet = problemSets[currentSetIndex];
+
+  const toggleAnswer = (qIndex: number) => {
+    const key = `${currentSetIndex}-${qIndex}`;
+    setRevealedAnswers(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const nextSet = () => {
+    if (currentSetIndex < problemSets.length - 1) {
+      setCurrentSetIndex(prev => prev + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const prevSet = () => {
+    if (currentSetIndex > 0) {
+      setCurrentSetIndex(prev => prev - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const renderVisual = (type: string) => {
+    switch (type) {
+      case 'table_train': return <TrainTable />;
+      case 'chart_potion': return <PotionChart />;
+      case 'illustration_pizza': return <PizzaIllustration />;
+      case 'map_farm': return <FarmMap />;
+      case 'card_toys': return <ToyCards />;
+      case 'chart_marathon': return <MarathonChart />;
+      case 'card_recipe': return <RecipeCard />;
+      case 'table_books': return <BooksTable />;
+      case 'illustration_rpg': return <RPGInterface />;
+      case 'chart_aquarium': return <AquariumChart />;
+      default: return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+      {/* Header */}
+      <header className="bg-indigo-600 text-white p-4 sticky top-0 z-20 shadow-md">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-6 h-6" />
+            <h1 className="text-lg md:text-xl font-bold">小小分析師挑戰賽</h1>
+          </div>
+          <div className="text-sm font-medium bg-indigo-700 px-3 py-1 rounded-full">
+            Level 3 - 進階數學
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-3xl mx-auto p-4 md:p-6">
+        
+        {/* Progress Bar */}
+        <div className="flex items-center justify-between mb-6 text-sm text-slate-500">
+          <span>題組 {currentSetIndex + 1} / {problemSets.length}</span>
+          <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-green-500 transition-all duration-300"
+              style={{ width: `${((currentSetIndex + 1) / problemSets.length) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Story Card */}
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden mb-8">
+          <div className="bg-slate-100 p-4 border-b border-slate-200 flex items-center gap-3">
+            <div className="p-2 bg-white rounded-lg shadow-sm text-indigo-600">
+              {currentSet.icon}
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">{currentSet.title}</h2>
+          </div>
+          
+          <div className="p-6">
+            <div className="mb-6 text-lg leading-relaxed text-slate-700">
+              {currentSet.story}
+            </div>
+
+            {/* Visual Area */}
+            <VisualContainer title="分析圖表">
+              {renderVisual(currentSet.visualType)}
+            </VisualContainer>
+          </div>
+        </div>
+
+        {/* Questions Area */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-indigo-500" />
+            請回答下列問題：
+          </h3>
+
+          {currentSet.questions.map((q, idx) => {
+            const isRevealed = revealedAnswers[`${currentSetIndex}-${idx}`];
+            return (
+              <div key={idx} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-grow">
+                    <p className="font-medium text-slate-800 mb-4 text-lg">{q.q}</p>
+                    
+                    {/* User Answer Area (Mockup) */}
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="請在這裡計算並輸入答案..." 
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      />
+                    </div>
+
+                    {/* Reveal Answer Section */}
+                    <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <button 
+                        onClick={() => toggleAnswer(idx)}
+                        className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                          isRevealed 
+                          ? 'bg-slate-100 text-slate-600' 
+                          : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                        }`}
+                      >
+                        {isRevealed ? '隱藏參考答案' : '顯示參考答案'}
+                        {isRevealed && <CheckCircle className="w-4 h-4" />}
+                      </button>
+
+                      {isRevealed && (
+                        <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg text-sm border border-green-200 animate-in fade-in slide-in-from-top-2 w-full sm:w-auto">
+                          <span className="font-bold mr-2">💡 解答：</span>
+                          {q.a}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between mt-12 pt-6 border-t border-slate-200">
+          <button 
+            onClick={prevSet}
+            disabled={currentSetIndex === 0}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+              currentSetIndex === 0 
+              ? 'text-slate-300 cursor-not-allowed' 
+              : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm'
+            }`}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            上一題組
+          </button>
+
+          <button 
+            onClick={nextSet}
+            disabled={currentSetIndex === problemSets.length - 1}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow-md transition-all ${
+              currentSetIndex === problemSets.length - 1
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'
+            }`}
+          >
+            {currentSetIndex === problemSets.length - 1 ? '完成挑戰！' : '下一題組'}
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+      </main>
+    </div>
+  );
+};
+
+export default App;
