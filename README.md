@@ -27,6 +27,20 @@
                         primary: '#4F46E5', // Indigo 600
                         primaryHover: '#4338CA', // Indigo 700
                         secondary: '#10B981', // Emerald 500
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'pop-in': 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     }
                 }
             }
@@ -51,18 +65,10 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* 淡入動畫 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
-    <div id="root" class="flex-grow"></div>
+    <div id="root" class="flex-grow flex flex-col"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
@@ -92,6 +98,7 @@
                 </IconBase>
             ),
             CheckCircle: (props) => <IconBase d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" {...props} />,
+            XCircle: (props) => <IconBase d="M18 6L6 18M6 6l12 12" {...props} />,
             HelpCircle: (props) => (
                 <IconBase {...props}>
                     <circle cx="12" cy="12" r="10"></circle>
@@ -130,10 +137,17 @@
                     <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
                     <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
                 </IconBase>
-            )
+            ),
+            Star: (props) => (
+                <IconBase {...props} fill={props.fill || "none"}>
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </IconBase>
+            ),
+            RefreshCw: (props) => <IconBase d="M23 4v6h-6M1 20v-6h6" {...props}><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></IconBase>
         };
 
-        // --- 資料與題庫 (Final Optimized Version) ---
+        // --- 資料與題庫 ---
+        // 修正：移除了所有括號內的提示，讓學生依賴題目敘述與圖表作答
         const problemSets = [
           {
             id: 1,
@@ -144,7 +158,7 @@
             questions: [
               { q: "請問搭乘「光速號」從月球飛到火星，總共需要花費幾小時幾分鐘？", a: "1 小時 40 分鐘 (09:30 到 11:30 是 2 小時，提早 20 分鐘)" },
               { q: "請問搭乘「彗星號」飛行時間是幾小時幾分鐘？它比「光速號」慢了多少分鐘？", a: "3 小時。慢了 80 分鐘 (3小時 = 180分，1小時40分 = 100分)" },
-              { q: "如果小光一家人（2 位大人、1 位小孩）選擇搭乘「彗星號」，購買來回票（去程和回程都搭這班車），總共需要花多少錢？", a: "1700 元 (單程總和 850 元 x 2 趟)" },
+              { q: "如果小光一家人有 2 位大人和 1 位小孩，選擇搭乘「彗星號」購買來回票，總共需要花多少錢？", a: "1700 元 (單程總和 850 元 x 2 趟)" },
               { q: "爸爸說：「如果飛行時間少於 2 小時，我就願意多花錢。」請問光速號符合要求嗎？", a: "符合 (1小時40分 < 2小時)" },
               { q: "回程必須趕上 16:00 的電影。若搭乘「光速號」（飛行時間與去程相同），最晚幾點幾分從火星出發？", a: "14:20 (下午 2 點 20 分，才來得及在 16:00 到)" }
             ]
@@ -158,7 +172,7 @@
             questions: [
               { q: "早上賣給石內卜教授之後，水缸裡還剩下幾毫升的史萊姆黏液？", a: "5500 毫升 (8000 - 2500)" },
               { q: "扣掉下午打破流失的部分，現在水缸裡最後剩下多少毫升的黏液？", a: "5050 毫升 (5500 - 450)" },
-              { q: "店長準備了容量為 900 毫升的中型玻璃瓶。請問剩下的黏液，最多可以「裝滿」幾瓶？(試著用乘法估算)", a: "5 瓶 (900 x 5 = 4500，還夠；900 x 6 = 5400，不夠)" },
+              { q: "店長準備了容量為 900 毫升的中型玻璃瓶。請問剩下的黏液，最多可以「裝滿」幾瓶？", a: "5 瓶 (900 x 5 = 4500，還夠；900 x 6 = 5400，不夠)" },
               { q: "承上題，裝滿之後，水缸裡還會剩下多少毫升的黏液無法裝滿一瓶？", a: "550 毫升 (5050 - 4500)" },
               { q: "裝滿的每瓶賣 200 元，剩下的零頭以 1 毫升 1 元賣掉。請問全部賣光可以賺多少錢？", a: "1550 元 (5瓶x200 + 550元)" }
             ]
@@ -173,8 +187,8 @@
               { q: "請問 5 大盒披薩總共被切成了幾片？", a: "40 片 (5 x 8)" },
               { q: "教室裡總共有多少人要吃披薩？", a: "30 人 (28學生 + 1老師 + 1實習)" },
               { q: "每人拿走一片後，還剩下幾片披薩？", a: "10 片 (40 - 30)" },
-              { q: "這些剩下的披薩是幾分之幾盒？(提示：一盒有8片)", a: "10/8 盒 或 1又2/8 盒 (或 1又1/4盒)" },
-              { q: "隔壁班體育老師要吃掉「半盒」(也就是 4 片)。剩下的披薩夠不夠給他吃？", a: "夠 (剩下10片，大於4片)" }
+              { q: "這些剩下的披薩是幾分之幾盒？", a: "10/8 盒 或 1又2/8 盒 (或 1又1/4盒)" },
+              { q: "隔壁班體育老師要吃掉「半盒」。剩下的披薩夠不夠給他吃？", a: "夠 (剩下10片，大於4片)" }
             ]
           },
           {
@@ -201,8 +215,8 @@
               { q: "請問買一組 2400 元的樂高積木，總共可以獲得幾點點數？", a: "24 點" },
               { q: "這些點數可以兌換幾張 100 元的折價券？", a: "2 張 (用掉 20 點)" },
               { q: "承上題，兌換完折價券後，還會剩下幾點點數沒用到？", a: "4 點" },
-              { q: "接下來買洋娃娃（800元），使用了所有折價券。還需要拿出多少「現金」？", a: "600 元 (800 - 200)" },
-              { q: "如果一開始三樣玩具(2400+800+1200)一起結帳，總共可以拿到幾點？", a: "44 點 (總金額4400元)" }
+              { q: "接下來買洋娃娃，使用了所有折價券。還需要拿出多少「現金」？", a: "600 元 (800 - 200)" },
+              { q: "如果一開始三樣玩具一起結帳，總共可以拿到幾點？", a: "44 點 (總金額4400元)" }
             ]
           },
           {
@@ -228,7 +242,7 @@
             questions: [
               { q: "請問做一個巨無霸菠蘿麵包，需要多少公克的麵粉？", a: "1500 公克 (300 x 5)" },
               { q: "請問做一個巨無霸菠蘿麵包，需要多少公克的奶油？", a: "250 公克 (300 - 50)" },
-              { q: "做完這 8 個麵包後，一袋 10 公斤的麵粉會剩下多少公克？(注意單位)", a: "不夠用！(需要12000g，只有10000g，缺2000g)" },
+              { q: "做完這 8 個麵包後，一袋 10 公斤的麵粉會剩下多少公克？", a: "不夠用！(需要12000g，只有10000g，缺2000g)" },
               { q: "烤箱一次只能烤 2 個，每次 25 分鐘。烤完 8 個麵包最少需要幾分鐘？", a: "100 分鐘 (4 批 x 25)" },
               { q: "承上題，下午 2:00 開始烤，中間無休息，最後一批出爐時間是？", a: "15:40 (下午 3 點 40 分)" }
             ]
@@ -244,7 +258,7 @@
               { q: "請問 A 櫃的書比 B 櫃的書多還是少？相差幾本？", a: "一樣多 (360 vs 360，相差0)" },
               { q: "如果要把 C 櫃的小說全部裝箱，最少需要幾個箱子才夠？", a: "9 個箱子 (350 ÷ 40 = 8...30，餘數要多一箱)" },
               { q: "小明搬 B 櫃漫畫已搬 5 箱(滿)，還剩下幾本沒搬？", a: "160 本 (360 - 200)" },
-              { q: "請全班30人+2老師喝珍奶(45元)。2000元夠不夠？找回多少？", a: "夠，找回 560 元 (技巧：30x45 + 2x45 = 1350 + 90 = 1440)" }
+              { q: "請全班 30 人和 2 位老師喝珍奶，每杯 45 元。老師拿出 2000 元付錢，請問夠不夠？找回多少？", a: "夠，找回 560 元 (技巧：30x45 + 2x45 = 1350 + 90 = 1440)" }
             ]
           },
           {
@@ -255,7 +269,7 @@
             visualType: "illustration_rpg",
             questions: [
               { q: "經過「事件一」後，阿瑞買藥水花掉多少？還剩多少？", a: "花 180，剩 320" },
-              { q: "經過「事件二」時，寶箱裡有多少枚金幣？(寶箱內有「阿瑞當時身上金幣的一半」)", a: "160 枚 (320的一半)" },
+              { q: "經過「事件二」時，寶箱裡有多少枚金幣？", a: "160 枚 (320的一半)" },
               { q: "拿走寶箱金幣後，阿瑞現在身上總共有多少枚金幣？", a: "480 枚 (320 + 160)" },
               { q: "經過「事件三」付完過路費後，阿瑞最後剩下多少枚金幣？", a: "280 枚 (480 - 200)" },
               { q: "買傳說寶劍(1000)還差多少枚金幣？", a: "720 枚 (1000 - 280)" }
@@ -278,7 +292,6 @@
         ];
 
         // --- 視覺化組件 ---
-
         const VisualContainer = ({ children, title }) => (
           <div className="bg-white p-4 rounded-lg shadow-sm border-2 border-slate-200 my-4">
             <div className="text-sm font-bold text-slate-500 mb-2 uppercase tracking-wide">{title}</div>
@@ -288,7 +301,7 @@
           </div>
         );
 
-        // 1. 火車時刻表
+        // 各種視覺化組件 (保持不變)
         const TrainTable = () => (
           <div className="w-full max-w-md overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse min-w-[300px]">
@@ -321,7 +334,6 @@
           </div>
         );
 
-        // 2. 藥水水缸
         const PotionChart = () => (
           <div className="flex items-end gap-8 h-48">
             <div className="relative w-24 h-40 border-2 border-slate-400 rounded-b-lg bg-slate-100 flex flex-col justify-end overflow-hidden">
@@ -342,7 +354,6 @@
           </div>
         );
 
-        // 3. 披薩圖
         const PizzaIllustration = () => (
           <div className="flex flex-wrap justify-center gap-4">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -364,7 +375,6 @@
           </div>
         );
 
-        // 4. 農場地圖
         const FarmMap = () => (
           <div className="relative w-64 h-48 bg-[#e2e8f0] border-4 border-dashed border-amber-700 p-4 flex items-center justify-center">
             <div className="absolute top-1 left-2 text-xs text-amber-800 font-bold">長 24m</div>
@@ -383,7 +393,6 @@
           </div>
         );
 
-        // 5. 玩具卡片
         const ToyCards = () => (
           <div className="flex flex-wrap gap-4 justify-center">
             <div className="w-28 bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col items-center">
@@ -404,27 +413,21 @@
           </div>
         );
 
-        // 6. 馬拉松圖表
         const MarathonChart = () => (
           <div className="w-full max-w-lg pt-8 pb-2 px-4">
             <div className="relative w-full h-2 bg-slate-300 rounded-full">
-              {/* Start */}
               <div className="absolute -top-1 left-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               <div className="absolute -top-6 left-0 text-xs font-bold text-green-700">起點</div>
               
-              {/* CP 1 */}
               <div className="absolute -top-1 left-[20%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
               <div className="absolute top-4 left-[20%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center whitespace-nowrap">補給1<br/>2km</div>
 
-              {/* CP 2 */}
               <div className="absolute -top-1 left-[45%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
               <div className="absolute -top-9 left-[45%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center whitespace-nowrap">補給2<br/>(前進2500m)</div>
 
-              {/* CP 3 */}
               <div className="absolute -top-1 left-[85%] w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
               <div className="absolute top-4 left-[85%] -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center whitespace-nowrap">補給3<br/>(剩1500m)</div>
 
-              {/* End */}
               <div className="absolute -top-1 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
               <div className="absolute -top-6 right-0 text-xs font-bold text-red-700">終點</div>
             </div>
@@ -432,7 +435,6 @@
           </div>
         );
 
-        // 7. 食譜卡
         const RecipeCard = () => (
           <div className="bg-[#fffbeb] border border-amber-200 p-4 rounded-lg shadow-sm max-w-sm w-full font-serif relative mx-auto">
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-3 py-1 text-xs rounded-full font-sans whitespace-nowrap">師傅的祕密配方</div>
@@ -454,7 +456,6 @@
           </div>
         );
 
-        // 8. 書櫃表格
         const BooksTable = () => (
           <div className="w-full max-w-md overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse bg-white min-w-[300px]">
@@ -490,7 +491,6 @@
           </div>
         );
 
-        // 9. RPG 介面
         const RPGInterface = () => (
           <div className="w-full max-w-md bg-slate-800 rounded-lg p-4 text-white font-mono border-4 border-slate-600 mx-auto">
             <div className="flex justify-between items-center mb-4 border-b border-slate-600 pb-2">
@@ -517,7 +517,6 @@
           </div>
         );
 
-        // 10. 水族館圖表
         const AquariumChart = () => (
           <div className="flex justify-around items-end w-full max-w-md h-40 bg-blue-50 rounded-xl border border-blue-200 p-4 relative overflow-hidden mx-auto">
             <div className="absolute bottom-0 left-0 w-full h-1/2 bg-blue-100 -z-10 rounded-b-xl"></div>
@@ -544,11 +543,60 @@
           </div>
         );
 
+        // --- 成績單組件 ---
+        const ScoreCard = ({ score, total, onRestart }) => {
+            let message = "";
+            let color = "";
+            const percentage = (score / total) * 100;
+
+            if (percentage === 100) {
+                message = "太厲害了！數學小天才！🏆";
+                color = "text-yellow-500";
+            } else if (percentage >= 80) {
+                message = "非常棒！小小數學家！🌟";
+                color = "text-green-500";
+            } else if (percentage >= 60) {
+                message = "不錯喔！繼續保持！👍";
+                color = "text-blue-500";
+            } else {
+                message = "別氣餒，再接再厲！💪";
+                color = "text-orange-500";
+            }
+
+            return (
+                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-auto text-center animate-pop-in">
+                    <div className={`text-6xl mb-4 flex justify-center ${color}`}>
+                        <Icons.Star className="w-24 h-24" fill="currentColor" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2 text-slate-800">挑戰完成！</h2>
+                    <p className={`text-lg font-bold mb-6 ${color}`}>{message}</p>
+                    
+                    <div className="bg-slate-50 rounded-xl p-6 mb-8 border border-slate-100">
+                        <div className="text-slate-500 text-sm mb-1">總得分</div>
+                        <div className="text-5xl font-black text-slate-800 mb-2">
+                            {score} <span className="text-lg text-slate-400 font-medium">/ {total}</span>
+                        </div>
+                        <div className="text-slate-400 text-xs">答對題數</div>
+                    </div>
+
+                    <button 
+                        onClick={onRestart}
+                        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                    >
+                        <Icons.RefreshCw className="w-5 h-5" />
+                        重新挑戰
+                    </button>
+                </div>
+            );
+        };
+
         // --- 主程式 App ---
 
         const App = () => {
           const [currentSetIndex, setCurrentSetIndex] = useState(0);
           const [revealedAnswers, setRevealedAnswers] = useState({});
+          const [userResults, setUserResults] = useState({}); // 記錄每題是否答對 { "0-0": true, "0-1": false }
+          const [showScore, setShowScore] = useState(false); // 是否顯示成績單
 
           const currentSet = problemSets[currentSetIndex];
 
@@ -560,10 +608,21 @@
             }));
           };
 
+          const markResult = (qIndex, isCorrect) => {
+             const key = `${currentSetIndex}-${qIndex}`;
+             setUserResults(prev => ({
+                 ...prev,
+                 [key]: isCorrect
+             }));
+          };
+
           const nextSet = () => {
             if (currentSetIndex < problemSets.length - 1) {
               setCurrentSetIndex(prev => prev + 1);
               window.scrollTo(0, 0);
+            } else {
+                // 完成所有題目，顯示成績
+                setShowScore(true);
             }
           };
 
@@ -572,6 +631,14 @@
               setCurrentSetIndex(prev => prev - 1);
               window.scrollTo(0, 0);
             }
+          };
+
+          const restartGame = () => {
+              setCurrentSetIndex(0);
+              setRevealedAnswers({});
+              setUserResults({});
+              setShowScore(false);
+              window.scrollTo(0, 0);
           };
 
           const renderVisual = (type) => {
@@ -590,6 +657,21 @@
             }
           };
 
+          // 計算總分
+          const totalQuestions = problemSets.reduce((acc, set) => acc + set.questions.length, 0);
+          const currentScore = Object.values(userResults).filter(val => val === true).length;
+
+          if (showScore) {
+              return (
+                  <div className="min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col justify-center items-center p-4">
+                      <ScoreCard score={currentScore} total={totalQuestions} onRestart={restartGame} />
+                      <footer className="mt-8 text-center text-slate-400 text-sm">
+                        <p>由Bob 憶源老師設計 · 專為台灣小學三年級素養教學打造</p>
+                      </footer>
+                  </div>
+              );
+          }
+
           return (
             <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12 flex flex-col">
               <header className="bg-indigo-600 text-white p-4 sticky top-0 z-20 shadow-md">
@@ -598,8 +680,13 @@
                     <Icons.Calculator className="w-6 h-6" />
                     <h1 className="text-lg md:text-xl font-bold">小小分析師挑戰賽</h1>
                   </div>
-                  <div className="text-xs md:text-sm font-medium bg-indigo-700 px-3 py-1 rounded-full whitespace-nowrap">
-                    Level 3 - 進階數學
+                  <div className="flex items-center gap-3">
+                      <div className="hidden md:block text-xs font-medium bg-indigo-700 px-3 py-1 rounded-full whitespace-nowrap">
+                        Level 3 - 進階數學
+                      </div>
+                      <div className="text-sm font-bold bg-white text-indigo-600 px-3 py-1 rounded-full">
+                        得分: {currentScore}
+                      </div>
                   </div>
                 </div>
               </header>
@@ -642,11 +729,20 @@
 
                   {currentSet.questions.map((q, idx) => {
                     const isRevealed = revealedAnswers[`${currentSetIndex}-${idx}`];
+                    const resultKey = `${currentSetIndex}-${idx}`;
+                    const userAnswer = userResults[resultKey]; // true, false, or undefined
+
                     return (
                       <div key={idx} className="bg-white p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
                         <div className="flex gap-4">
-                          <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
-                            {idx + 1}
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
+                              userAnswer === true ? 'bg-green-100 text-green-700' :
+                              userAnswer === false ? 'bg-red-100 text-red-700' :
+                              'bg-indigo-100 text-indigo-700'
+                          }`}>
+                            {userAnswer === true ? <Icons.CheckCircle className="w-5 h-5" /> :
+                             userAnswer === false ? <Icons.XCircle className="w-5 h-5" /> :
+                             idx + 1}
                           </div>
                           <div className="flex-grow">
                             <p className="font-medium text-slate-800 mb-4 text-base md:text-lg">{q.q}</p>
@@ -659,24 +755,50 @@
                               />
                             </div>
 
-                            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                              <button 
-                                onClick={() => toggleAnswer(idx)}
-                                className={`text-sm px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start ${
-                                  isRevealed 
-                                  ? 'bg-slate-100 text-slate-600' 
-                                  : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                                }`}
-                              >
-                                {isRevealed ? '隱藏參考答案' : '顯示參考答案'}
-                                {isRevealed && <Icons.CheckCircle className="w-4 h-4" />}
-                              </button>
+                            <div className="mt-4 flex flex-col gap-3">
+                              {/* 顯示/隱藏答案按鈕 */}
+                              {!isRevealed ? (
+                                  <button 
+                                    onClick={() => toggleAnswer(idx)}
+                                    className="text-sm px-4 py-2 rounded-lg font-medium transition-colors bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
+                                  >
+                                    顯示參考答案
+                                  </button>
+                              ) : (
+                                  <div className="animate-fade-in space-y-3">
+                                      {/* 參考答案區塊 */}
+                                      <div className="bg-green-50 text-green-800 px-4 py-3 rounded-lg text-sm border border-green-200">
+                                        <div className="font-bold mb-1 flex items-center gap-2">
+                                            <Icons.CheckCircle className="w-4 h-4" /> 參考解答：
+                                        </div>
+                                        {q.a}
+                                      </div>
 
-                              {isRevealed && (
-                                <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg text-sm border border-green-200 w-full sm:w-auto animate-fade-in">
-                                  <span className="font-bold mr-2">💡 解答：</span>
-                                  {q.a}
-                                </div>
+                                      {/* 自我評分區塊 - 只在未評分時顯示，或允許重新評分 */}
+                                      <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+                                          <span className="text-sm font-bold text-slate-500">你答對了嗎？</span>
+                                          <button 
+                                            onClick={() => markResult(idx, true)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-all ${
+                                                userAnswer === true 
+                                                ? 'bg-green-500 text-white shadow-md transform scale-105' 
+                                                : 'bg-slate-100 text-slate-500 hover:bg-green-100 hover:text-green-600'
+                                            }`}
+                                          >
+                                            ✅ 答對了
+                                          </button>
+                                          <button 
+                                            onClick={() => markResult(idx, false)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1 transition-all ${
+                                                userAnswer === false 
+                                                ? 'bg-red-500 text-white shadow-md transform scale-105' 
+                                                : 'bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600'
+                                            }`}
+                                          >
+                                            💪 再接再厲
+                                          </button>
+                                      </div>
+                                  </div>
                               )}
                             </div>
                           </div>
@@ -702,14 +824,13 @@
 
                   <button 
                     onClick={nextSet}
-                    disabled={currentSetIndex === problemSets.length - 1}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold shadow-md transition-all ${
                       currentSetIndex === problemSets.length - 1
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      ? 'bg-green-600 text-white hover:bg-green-700 hover:shadow-lg active:scale-95'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg active:scale-95'
                     }`}
                   >
-                    {currentSetIndex === problemSets.length - 1 ? '完成挑戰！' : '下一題組'}
+                    {currentSetIndex === problemSets.length - 1 ? '送出成績' : '下一題組'}
                     <Icons.ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -717,7 +838,7 @@
               </main>
 
               <footer className="bg-slate-100 py-6 text-center text-slate-500 text-sm mt-8 border-t border-slate-200">
-                <p>20年資深教師設計 · 專為台灣小學三年級素養教學打造</p>
+                <p>由Bob 憶源老師設計 · 專為台灣小學三年級素養教學打造</p>
                 <p className="mt-1">© 2025 Math Adventure Learning</p>
               </footer>
             </div>
