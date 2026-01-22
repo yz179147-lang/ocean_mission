@@ -1,951 +1,617 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FET Final Vocabulary Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>深藍任務：平板專用版 (V3.0)</title>
     <style>
         :root {
-            --primary-color: #4a90e2;
-            --primary-dark: #357abd;
-            --secondary-color: #f0f2f5;
-            --text-color: #2c3e50;
-            --correct-bg: #d4edda;
-            --correct-border: #c3e6cb;
-            --correct-text: #155724;
-            --wrong-bg: #f8d7da;
-            --wrong-border: #f5c6cb;
-            --wrong-text: #721c24;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --primary-color: #00d2ff;
+            --bg-color: #0a192f;
+            --panel-bg: #112240;
+            --accent-color: #64ffda;
+            --text-color: #e6f1ff;
+            --danger-color: #ff6b6b;
+            --success-color: #51cf66;
+            --grid-line: #1d3f5e;
+            --input-bg: rgba(0,0,0,0.3);
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        /* 基礎設定 */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--secondary-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-color);
-            line-height: 1.5;
             margin: 0;
-            padding: 15px;
-            font-size: 16px; /* Base font size for mobile */
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            margin: 10px 0;
-            font-size: 1.5rem;
-        }
-
-        .meta-info {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-
-        .student-info {
+            padding: 20px; /* 平板邊緣留白 */
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .student-info input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            width: 100%;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .student-info input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-        }
-
-        .question-block {
-            margin-bottom: 25px;
-            padding: 15px;
-            border: 1px solid #ebedf0;
-            border-radius: 10px;
-            background-color: #fff;
-        }
-
-        .question-text {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            line-height: 1.4;
-        }
-
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .option-label {
-            display: flex;
-            align-items: flex-start; /* Align top for multi-line text */
-            padding: 12px 15px;
-            border: 2px solid #eef0f2;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            background-color: #fff;
-        }
-
-        .option-label:active {
-            background-color: #f5f7fa;
-            transform: scale(0.99);
-        }
-
-        /* Custom Radio Button Style */
-        .option-label input[type="radio"] {
-            margin-right: 12px;
-            margin-top: 3px; /* Align with first line of text */
-            min-width: 20px;
-            min-height: 20px;
-            cursor: pointer;
-        }
-
-        /* Selected State */
-        .option-label:has(input:checked) {
-            border-color: var(--primary-color);
-            background-color: #f0f7ff;
-        }
-
-        /* Result Styles */
-        .correct-answer {
-            border-color: var(--correct-border) !important;
-            background-color: var(--correct-bg) !important;
-            color: var(--correct-text);
-        }
-
-        .correct-answer::after {
-            content: "✓";
-            position: absolute;
-            right: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .wrong-user-answer {
-            border-color: var(--wrong-border) !important;
-            background-color: var(--wrong-bg) !important;
-            color: var(--wrong-text);
-        }
-
-        .wrong-user-answer::after {
-            content: "✗";
-            position: absolute;
-            right: 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .feedback-text {
-            margin-top: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            display: none;
-            padding: 8px;
-            border-radius: 6px;
-        }
-
-        .submit-btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 50px; /* Rounded pill shape */
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 30px;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
-            transition: transform 0.2s, background-color 0.3s;
-            -webkit-appearance: none; /* Remove default iOS style */
-        }
-
-        .submit-btn:active {
-            transform: scale(0.98);
-            background-color: var(--primary-dark);
-        }
-
-        .submit-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        #result-area {
-            display: none;
-            text-align: center;
-            margin-top: 30px;
-            padding: 25px;
-            background: linear-gradient(135deg, #2c3e50, #4ca1af);
-            color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .score-circle {
-            width: 120px;
-            height: 120px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: 15px auto;
-            border: 4px solid rgba(255,255,255,0.8);
+            min-height: 100vh;
+            /* 深海漸層背景 */
+            background-image: radial-gradient(circle at 50% 50%, #1a3c6e 0%, #0a192f 100%);
+            /* 防止 iOS 彈性捲動效果露出背景 */
+            overscroll-behavior: none; 
         }
 
-        .score-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            line-height: 1;
+        .game-container {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px; /* 針對平板加寬 */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            /* 確保內容不會溢出 */
+            max-height: 95vh;
+            overflow-y: auto; 
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h2 { margin: 0 0 10px 0; font-size: 1.8rem; }
+
+        .mission-badge {
+            background: linear-gradient(90deg, var(--primary-color), #0077be);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            display: inline-block;
+        }
+
+        .progress-container {
+            text-align: right;
+            width: 240px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Content Areas */
+        .question-area {
+            flex: 1; /* 讓內容區填滿剩餘空間 */
+        }
+
+        .story-text {
+            font-size: 1.3rem; /* 平板字體加大 */
+            line-height: 1.6;
+            background: rgba(0, 210, 255, 0.08);
+            padding: 20px;
+            border-left: 6px solid var(--primary-color);
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 25px;
+        }
+
+        .visual-display {
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px; /* 確保圖形夠大 */
+            margin-bottom: 25px;
+            border: 2px solid rgba(255,255,255,0.05);
+        }
+
+        /* Data Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.1rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--grid-line);
+            padding: 15px; /* 加大觸控間距 */
+            text-align: center;
+        }
+        .data-table th { background: rgba(0, 210, 255, 0.15); color: var(--primary-color); }
+
+        /* Ocean Grid (Tablet Optimized) */
+        .ocean-grid {
+            display: grid;
+            /* 平板上格子加大至 55px */
+            grid-template-columns: repeat(6, 55px);
+            grid-gap: 2px;
+            background: var(--grid-line);
+            padding: 5px;
+            border: 3px solid #5a7d9a;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
-        .score-total {
-            font-size: 0.9rem;
-            opacity: 0.9;
+        .cell {
+            width: 55px;
+            height: 55px;
+            background: #1b4965;
+            position: relative;
+        }
+        
+        .cell.oil-full { background: #111; }
+        .cell.oil-full::after {
+            content: ''; position: absolute; top: 3px; left: 3px; right: 3px; bottom: 3px;
+            border: 1px dashed #444;
         }
 
-        .review-btn {
-            padding: 12px 24px;
-            background: white;
-            color: #2c3e50;
+        /* Triangles with clip-path (High DPI friendly) */
+        .cell.oil-tri-tl { background: #111; clip-path: polygon(0 0, 100% 0, 0 100%); }
+        .cell.oil-tri-tr { background: #111; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+        .cell.oil-tri-bl { background: #111; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+        .cell.oil-tri-br { background: #111; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+
+        /* Clock Visual */
+        .clock-face {
+            width: 180px; /* 加大 */
+            height: 180px;
+            border: 8px solid var(--accent-color);
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle, #222 0%, #111 100%);
+            box-shadow: 0 0 25px rgba(100, 255, 218, 0.2);
+        }
+        .clock-mark {
+            position: absolute; width: 4px; height: 15px; background: #666;
+            left: 50%; transform: translateX(-50%);
+        }
+        .hand {
+            position: absolute; bottom: 50%; left: 50%;
+            transform-origin: bottom center; background: #fff;
+            border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .hand.hour { height: 50px; width: 8px; background: var(--primary-color); }
+        .hand.minute { height: 70px; width: 6px; }
+        .center-dot {
+            position: absolute; top: 50%; left: 50%;
+            width: 16px; height: 16px; background: var(--accent-color);
+            border-radius: 50%; transform: translate(-50%, -50%);
+        }
+
+        /* Inputs & Buttons (Tablet Friendly) */
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+            background: var(--input-bg);
+            color: #fff;
+            font-size: 1.5rem; /* 大字體防止 iOS 自動縮放 */
+            outline: none;
+            -webkit-appearance: none; /* 移除 iOS 預設陰影 */
+        }
+        input[type="number"]:focus {
+            background: rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(0, 210, 255, 0.2);
+        }
+
+        button {
+            padding: 15px 35px;
             border: none;
-            border-radius: 25px;
+            border-radius: 12px;
             font-weight: bold;
-            margin-top: 15px;
+            font-size: 1.2rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            /* 解決觸控延遲 */
+            touch-action: manipulation; 
         }
 
-        /* Floating Progress Bar (Optional but nice) */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
+        .btn-submit {
             background: var(--primary-color);
-            width: 0%;
-            transition: width 0.3s;
-            z-index: 1000;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+        }
+        .btn-submit:active { transform: scale(0.96); }
+
+        .btn-option {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            flex: 1;
+            min-height: 60px; /* 增加點擊高度 */
+            font-size: 1.1rem;
+        }
+        .btn-option.selected {
+            background: var(--primary-color);
+            color: #000;
+            font-weight: 800;
         }
 
-        @media (min-width: 600px) {
-            .container {
-                padding: 40px;
-            }
-            .student-info {
-                flex-direction: row;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .option-label:hover {
-                background-color: #f8f9fa;
-                border-color: #d1d8e0;
-            }
+        /* Feedback Area */
+        .feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .feedback.correct { 
+            background: rgba(81, 207, 102, 0.15); 
+            border: 1px solid var(--success-color); 
+            color: #a5ffd6;
+        }
+        .feedback.wrong { 
+            background: rgba(255, 107, 107, 0.15); 
+            border: 1px solid var(--danger-color); 
+            color: #ffc9c9;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 📱 Mobile Specific (手機直式) */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .game-container { padding: 15px; max-height: 100vh; border-radius: 0; border: none; }
+            .ocean-grid { grid-template-columns: repeat(6, 40px); }
+            .cell { width: 40px; height: 40px; }
+            h2 { font-size: 1.5rem; }
+            .story-text { font-size: 1.1rem; }
+            .input-group { flex-direction: column; }
+            button { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-<div class="progress-bar" id="progressBar"></div>
-
-<div class="container">
-    <header>
-        <h1>FET Final Vocabulary Challenge</h1>
-        <div class="meta-info">50 Questions • 2 Points Each • Total 100 Points</div>
-        <div class="student-info">
-            <input type="text" id="studentName" placeholder="Enter Your Name">
-            <input type="text" id="quizDate" placeholder="Date" onfocus="(this.type='date')">
+<div class="game-container">
+    <div class="header">
+        <div>
+            <h2>🚢 海神號：深藍任務</h2>
+            <div style="margin-top:5px;" class="mission-badge" id="level-badge">準備中...</div>
         </div>
-    </header>
+        <div class="progress-container">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <small>電力狀況</small>
+                <div id="score-display" style="font-size: 1.1rem; color: var(--accent-color); font-weight:bold;">積分: 0</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
 
-    <form id="quizForm">
-        <div id="questions-container">
-            <!-- Questions will be injected here by JavaScript -->
+    <div id="intro-screen">
+        <div class="story-text">
+            <strong>艦長您好！歡迎回到「海神號」。</strong><br><br>
+            雷達偵測到太平洋出現大量海洋垃圾與油汙。我們需要您的數學能力來指揮機器手臂、導航船隻並計算汙染面積。<br><br>
+            ⚠️ <strong>平板操作說明：</strong><br>
+            1. 點擊輸入框會彈出鍵盤，輸入後按「確認指令」。<br>
+            2. 圖形可以放大查看（如果需要）。<br>
+            3. 請準備好紙筆進行計算。
+        </div>
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn-submit" onclick="startGame()" style="font-size: 1.4rem; padding: 20px 60px;">啟動引擎 🚀</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="question-area">
+            <div id="q-text" class="story-text">題目載入中...</div>
+            
+            <div id="q-visual" class="visual-display">
+                </div>
+
+            <div id="input-number" class="input-group hidden">
+                <input type="number" id="user-answer" placeholder="點此輸入數字答案" inputmode="decimal">
+                <button id="btn-num-submit" class="btn-submit" onclick="checkAnswer()">確認指令</button>
+            </div>
+
+            <div id="input-options" class="input-group hidden">
+                </div>
         </div>
 
-        <button type="button" class="submit-btn" onclick="submitQuiz()">Submit Quiz</button>
-    </form>
-
-    <div id="result-area">
-        <h2 style="margin:0">Quiz Results</h2>
-        <div id="student-display" style="margin-top:5px; opacity:0.9"></div>
+        <div id="feedback-box" class="feedback"></div>
         
-        <div class="score-circle">
-            <div class="score-value" id="score-value">0</div>
-            <div class="score-total">/ 100</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; gap: 20px;">
+            <button class="btn-option" style="flex: 1; border: 1px dashed #666; color: #aaa;" onclick="showHint()">💡 呼叫大副提示</button>
+            <button id="btn-next" class="btn-submit hidden" style="flex: 2;" onclick="nextQuestion()">下一題 ➡️</button>
         </div>
-        
-        <p id="message" style="font-weight:bold; font-size:1.1rem; margin:10px 0;"></p>
-        <button class="review-btn" onclick="reviewQuiz()">Review Answers</button>
+    </div>
+
+    <div id="end-screen" class="hidden" style="text-align: center; padding: 20px;">
+        <h1 style="color: var(--accent-color); font-size: 3rem; margin-bottom: 20px;">任務完成！</h1>
+        <div class="story-text" style="text-align: center;">
+            恭喜艦長！<br>
+            您成功淨化了海域，所有的計算都精準無誤。<br>
+            海神號已安全返航。
+        </div>
+        <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 20px; margin: 40px 0; border: 2px solid var(--primary-color);">
+            <div style="font-size: 1.2rem; color: #888;">最終積分</div>
+            <div id="final-score" style="font-size: 4rem; font-weight: bold; color: var(--primary-color); margin: 10px 0;">0</div>
+            <div id="final-rank" style="font-size: 1.5rem; color: var(--accent-color);"></div>
+        </div>
+        <button class="btn-submit" style="width: 100%;" onclick="location.reload()">重新挑戰</button>
     </div>
 </div>
 
 <script>
+    // 題目資料庫 (保持原樣，僅優化顯示HTML)
     const questions = [
         {
-            q: "1. What is the best definition of 'emergency'?",
-            options: [
-                "(A) A planned event that occurs regularly without any surprise",
-                "(B) A serious, unexpected situation that requires immediate action",
-                "(C) A dangerous weapon used to protect people during a war",
-                "(D) A long journey taken to a distant and unknown country"
-            ],
-            answer: 1 // B
+            type: "number",
+            text: "【第一關：物資運算】<br>船員小明今天回收了 <strong>35 磚</strong> 寶特瓶。<br>每磚 8 分。特殊規則：『每收集滿 5 磚，額外加送 10 分』。<br>請問總共獲得多少積分？",
+            visual: `
+                <table class="data-table">
+                    <tr><th>物品</th><th>基礎分</th><th>特殊規則</th></tr>
+                    <tr><td>寶特瓶磚</td><td>8 分/磚</td><td>滿 5 磚送 10 分</td></tr>
+                </table>`,
+            answer: 350,
+            hint: "步驟 1：先算基礎分 (35 x 8)。<br>步驟 2：算獎勵。35 裡面有幾個 5？就有幾次 10 分。",
+            explanation: "基礎分：35 x 8 = 280 分。<br>獎勵次數：35 ÷ 5 = 7 次。<br>獎勵分：7 x 10 = 70 分。<br>總分：280 + 70 = 350 分。"
         },
         {
-            q: "2. Which word means 'to bring your foot down heavily and noisily'?",
-            options: [
-                "(A) stumble",
-                "(B) slide",
-                "(C) sprint",
-                "(D) stomp"
-            ],
-            answer: 3 // D
+            type: "number",
+            text: "【第一關：物資運算】<br>撈起 <strong>6 張</strong> 幽靈漁網 (每張 50 分)。<br>但每張網子消耗 5 單位電力，每單位電力成本視為 2 分。<br>請問扣除成本後，淨賺多少分？",
+            visual: `<div style="font-size: 4rem; display:flex; gap:20px; align-items:center; justify-content:center;">🕸️ x 6 <span style="font-size:0.4em; color:#888; border:1px solid #555; padding:5px; border-radius:5px;">⚠️ 耗電警告</span></div>`,
+            answer: 240,
+            hint: "收入 = 6 x 50。<br>消耗電力 = 6 x 5 = 30 單位。<br>電力成本 = 30 x 2。<br>最後相減。",
+            explanation: "總收入：6 x 50 = 300 分。<br>總耗電：6 x 5 = 30 單位。<br>總成本：30 x 2 = 60 分。<br>淨賺：300 - 60 = 240 分。"
         },
         {
-            q: "3. What does it mean to be 'eager'?",
-            options: [
-                "(A) Strong wanting to do or have something soon",
-                "(B) Feeling very tired and needing rest immediately",
-                "(C) Being afraid of what might happen in the future",
-                "(D) Having a lot of knowledge about a specific topic"
-            ],
-            answer: 0 // A
+            type: "option",
+            options: ["鈍角", "直角", "銳角"],
+            text: "【第二關：雷達導航】<br>暴風雨中，船身先向右轉了一個「直角」，再繼續向右轉了一個「銳角」。<br>請問現在船身轉過的角度總和，是什麼角？",
+            visual: `<div style="text-align:center;"><span style="font-size:5rem;">🚢</span><br><span style="color:var(--accent-color); font-size: 1.5rem;">90° + ?</span></div>`,
+            answer: "鈍角",
+            hint: "直角是 90 度。<br>銳角是大於 0 度。<br>加起來一定大於 90 度，且小於 180 度。",
+            explanation: "直角(90度) + 銳角(例如30度) = 120度。<br>大於90且小於180的角稱為鈍角。"
         },
         {
-            q: "4. A 'myth' is best defined as:",
-            options: [
-                "(A) A scientific fact proved by experiments",
-                "(B) A written record of daily personal events",
-                "(C) A funny joke told to entertain a large audience",
-                "(D) A traditional story explaining natural or social history"
-            ],
-            answer: 3 // D
+            type: "option",
+            options: ["大於直角", "等於直角", "小於直角"],
+            text: "【第二關：雷達導航】<br>觀察雷達時鐘。<br>3:00 是直角，6:00 是平角。<br>請問 <strong>4:00</strong> 時，指針張開的角度是？",
+            visual: `
+                <div class="clock-face">
+                    <div class="clock-mark" style="transform: rotate(0deg) translateY(5px);"></div>
+                    <div class="clock-mark" style="transform: rotate(90deg) translateY(5px);"></div>
+                    <div class="clock-mark" style="transform: rotate(180deg) translateY(5px);"></div>
+                    <div class="clock-mark" style="transform: rotate(270deg) translateY(5px);"></div>
+                    <div class="hand hour" style="transform: rotate(120deg);"></div>
+                    <div class="hand minute" style="transform: rotate(0deg);"></div>
+                    <div class="center-dot"></div>
+                </div>`,
+            answer: "大於直角",
+            hint: "3點是90度。4點的指針張得比3點更開，所以角度更大。",
+            explanation: "每個小時鐘面走 30 度。<br>3點是 90 度 (直角)。<br>4點是 120 度 (鈍角)，所以比直角大。"
         },
         {
-            q: "5. What is the definition of 'crisis'?",
-            options: [
-                "(A) A period of calm and peaceful relaxation",
-                "(B) A time of intense difficulty, trouble, or danger",
-                "(C) A solution to a very simple mathematical problem",
-                "(D) A large celebration involving many people"
-            ],
-            answer: 1 // B
+            type: "option",
+            options: ["大副 (兩銳角)", "二副 (一銳一直)", "都不對"],
+            text: "【第二關：圖形推理】<br>海圖上有一個三角形，其中有一個角是「鈍角」。<br>大副說：『那另外兩個角一定都是銳角！』<br>二副說：『不一定，可能還有一個是直角。』<br>誰說得對？",
+            visual: `<svg width="200" height="100" viewBox="0 0 200 100"><polygon points="30,80 170,80 70,20" style="fill:none;stroke:#00d2ff;stroke-width:4" /><text x="70" y="70" fill="white" font-size="16">鈍角?</text></svg>`,
+            answer: "大副 (兩銳角)",
+            hint: "三角形內角和是 180 度。<br>鈍角已經超過 90 度了，剩下兩個角加起來不到 90 度。",
+            explanation: "因為鈍角 > 90度，若還有一個直角(90度)，加起來就超過 180 度了，無法形成三角形。所以剩下兩個一定很小(銳角)。"
         },
         {
-            q: "6. Which word means 'to copy the speech or behavior of someone'?",
-            options: [
-                "(A) ignore",
-                "(B) invent",
-                "(C) imitate",
-                "(D) inspire"
-            ],
-            answer: 2 // C
+            type: "number",
+            text: "【第三關：汙染測量】<br>請觀察下方的油汙網格圖。<br>黑色(⬛)是完整 1 平方公里，三角形是半格。<br>請問這片油汙的總面積是多少平方公里？",
+            visual: `
+                <div class="ocean-grid">
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell oil-tri-tr"></div><div class="cell oil-full"></div><div class="cell oil-full"></div><div class="cell oil-tri-tl"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell oil-full"></div><div class="cell oil-full"></div><div class="cell oil-full"></div><div class="cell oil-full"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell oil-tri-br"></div><div class="cell oil-full"></div><div class="cell oil-full"></div><div class="cell oil-tri-bl"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                </div>
+                <div style="margin-top:15px; font-size:1rem; color: #aaa;">💡 提示：請觀察三角形的方向，兩個三角形 = 一個正方形</div>
+            `,
+            answer: 10,
+            hint: "先數完整的黑色正方形有幾個。<br>再數三角形有幾個 (4個)，把它們兩兩拼湊成正方形。",
+            explanation: "完整格子：中間一排4個 + 上下排中間各2個 = 8 個。<br>三角形：4 個，拼成 2 個完整格。<br>總計：8 + 2 = 10 平方公里。"
         },
         {
-            q: "7. What is a 'refugee'?",
-            options: [
-                "(A) A person who travels to different countries for a holiday",
-                "(B) A person forced to leave their country to escape war",
-                "(C) A person who moves to a new city to find a better job",
-                "(D) A person sent to prison for breaking the law"
-            ],
-            answer: 1 // B
+            type: "option",
+            options: ["甲比較長", "乙比較長", "一樣長"],
+            text: "【第三關：圍籬迷思】<br>比較兩個面積相同的形狀：<br>甲：面積 4 的正方形 (邊長2)。<br>乙：面積 4 的長條形 (長4寬1)。<br>哪一個需要的攔油索(周長)比較長？",
+            visual: `<div style="display:flex; gap:40px; justify-content:center; align-items:flex-end;">
+                        <div style="text-align:center;">
+                            <div style="border:3px solid #fff; width:60px; height:60px; margin:0 auto; background:rgba(255,255,255,0.1);"></div>
+                            <span style="font-size:1.2rem">甲</span>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="border:3px solid #fff; width:120px; height:30px; margin:0 auto; background:rgba(255,255,255,0.1);"></div>
+                            <span style="font-size:1.2rem">乙</span>
+                        </div>
+                     </div>`,
+            answer: "乙比較長",
+            hint: "算算看周長。<br>甲邊長是 2 (2x2=4)。周長是 2+2+2+2。<br>乙長4寬1 (4x1=4)。周長是 4+1+4+1。",
+            explanation: "甲周長 = 2 x 4 = 8。<br>乙周長 = (4+1) x 2 = 10。<br>乙比較長。形狀越扁長，周長通常越長。"
         },
         {
-            q: "8. 'Debris' refers to:",
-            options: [
-                "(A) Valuable items hidden underground for safety",
-                "(B) A collection of new tools used for construction",
-                "(C) The fresh soil used for planting a garden",
-                "(D) Scattered pieces of waste or remains after destruction"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "9. If something is 'sufficient', it is:",
-            options: [
-                "(A) Enough or adequate",
-                "(B) Too much to handle",
-                "(C) Empty or hollow",
-                "(D) Lacking in quality"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "10. What is a 'prosthetic'?",
-            options: [
-                "(A) A protective gear worn by athletes during a game",
-                "(B) An artificial body part used to replace a missing one",
-                "(C) A natural bone structure found inside the body",
-                "(D) A medical tool used to measure blood pressure"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "11. A 'poacher' is someone who:",
-            options: [
-                "(A) Protects wild animals from danger",
-                "(B) Studies animals in their natural habitat",
-                "(C) Raises animals on a large farm",
-                "(D) Hunts or catches animals illegally"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "12. What is the purpose of a 'vaccine'?",
-            options: [
-                "(A) To cure a broken bone or injury immediately",
-                "(B) To measure the temperature of a sick patient",
-                "(C) To stimulate antibodies and provide immunity against disease",
-                "(D) To provide nutrition and energy for the body"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "13. To 'motivate' means to:",
-            options: [
-                "(A) Force someone to do something against their will",
-                "(B) Provide someone with a reason or encouragement to act",
-                "(C) Stop someone from making a big mistake",
-                "(D) Watch someone carefully without saying anything"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "14. A 'victim' is:",
-            options: [
-                "(A) A person harmed or injured as a result of a crime",
-                "(B) A person who commits a crime against others",
-                "(C) A person who witnesses an accident happen",
-                "(D) A person who helps save others from danger"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "15. Which word is a synonym for 'courageous'?",
-            options: [
-                "(A) dangerous",
-                "(B) nervous",
-                "(C) cautious",
-                "(D) brave"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "16. Something described as 'giant' is:",
-            options: [
-                "(A) Extremely small and hard to see",
-                "(B) Average in height and weight",
-                "(C) Of very great size or force; huge",
-                "(D) Broken into many tiny pieces"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "17. A 'herd' refers to:",
-            options: [
-                "(A) A large group of birds flying together",
-                "(B) A group of animals feeding or moving together",
-                "(C) A pack of wolves hunting in the forest",
-                "(D) A school of fish swimming in the ocean"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "18. 'Teamwork' is best defined as:",
-            options: [
-                "(A) The combined action of a group working effectively",
-                "(B) The effort of a single person working alone",
-                "(C) A competition where people fight against each other",
-                "(D) A leadership role taken by one boss"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "19. A 'volunteer' is someone who:",
-            options: [
-                "(A) Works hard in exchange for a high salary",
-                "(B) Is forced to work by the government",
-                "(C) Manages a company and hires employees",
-                "(D) Freely offers to do something without being paid"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "20. To 'fasten' means to:",
-            options: [
-                "(A) Close or join something securely",
-                "(B) Move at a very high speed",
-                "(C) Eat very little food for a day",
-                "(D) Break something into two parts"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "21. What is a 'firefly'?",
-            options: [
-                "(A) A small spark created by a campfire",
-                "(B) A dangerous fly that bites humans",
-                "(C) A soft-bodied beetle that glows at night",
-                "(D) A mythical creature that breathes fire"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "22. A 'device' is:",
-            options: [
-                "(A) A detailed plan for a future project",
-                "(B) A tool or gadget made for a particular purpose",
-                "(C) A piece of advice given by a teacher",
-                "(D) A natural object found in the forest"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "23. A 'solution' is:",
-            options: [
-                "(A) A difficult puzzle that takes time to finish",
-                "(B) A means of solving a problem or dealing with a situation",
-                "(C) A mistake made during a calculation",
-                "(D) A question that has no clear answer"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "24. Which word means 'to care for or look after'?",
-            options: [
-                "(A) tend",
-                "(B) mend",
-                "(C) send",
-                "(D) bend"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "25. If you are 'shocked', you are:",
-            options: [
-                "(A) Feeling extremely tired and sleepy",
-                "(B) Very happy about a piece of good news",
-                "(C) Surprised or upset by something unexpected",
-                "(D) Angry at someone for making a mistake"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "26. A 'skill' is:",
-            options: [
-                "(A) A lucky event that happens by chance",
-                "(B) A feeling of fear when facing danger",
-                "(C) A tool used to fix broken machines",
-                "(D) The ability to do something well; expertise"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "27. Someone who is 'clever' is:",
-            options: [
-                "(A) Slow to understand new ideas",
-                "(B) Quick to learn and apply ideas; smart",
-                "(C) Very strong but not very intelligent",
-                "(D) Always angry and difficult to talk to"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "28. 'Electricity' is:",
-            options: [
-                "(A) A form of energy resulting from charged particles",
-                "(B) A type of fuel used to power old trains",
-                "(C) A natural gas found deep underground",
-                "(D) A liquid used to cool down machines"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "29. A 'pasture' is:",
-            options: [
-                "(A) A large desert with plenty of sand",
-                "(B) Land covered with grass for grazing animals",
-                "(C) A deep forest with many tall trees",
-                "(D) A high mountain covered in snow"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "30. To 'intervene' means to:",
-            options: [
-                "(A) Watch a situation without doing anything",
-                "(B) Cause a fight between two people",
-                "(C) Come between to prevent or alter a result",
-                "(D) Leave a place immediately"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "31. What is 'punishment'?",
-            options: [
-                "(A) A penalty inflicted as retribution for an offense",
-                "(B) A reward given for excellent performance",
-                "(C) A game played by children in school",
-                "(D) A gift given on a special occasion"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "32. To 'survive' means to:",
-            options: [
-                "(A) Give up when things get difficult",
-                "(B) Continue to live or exist, especially in spite of danger",
-                "(C) Disappear completely without a trace",
-                "(D) Suffers from a long-term illness"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "33. What does 'scatter' mean?",
-            options: [
-                "(A) To gather items into a neat pile",
-                "(B) To glue two pieces of paper together",
-                "(C) To throw in various random directions",
-                "(D) To build a structure using bricks"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "34. To 'infer' is to:",
-            options: [
-                "(A) State a fact clearly and loudly",
-                "(B) Ignore the details of a story",
-                "(C) Create a new story from imagination",
-                "(D) Deduce or conclude information from evidence"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "35. To be 'aware' means:",
-            options: [
-                "(A) To be asleep and dreaming",
-                "(B) To have knowledge or perception of a situation",
-                "(C) To be confused about what is happening",
-                "(D) To be lost in a strange place"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "36. Which word is a synonym for 'aid'?",
-            options: [
-                "(A) harm",
-                "(B) block",
-                "(C) help",
-                "(D) stop"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "37. To 'attach' means to:",
-            options: [
-                "(A) Join or fasten one thing to another",
-                "(B) Separate two things that are glued",
-                "(C) Break something into small pieces",
-                "(D) Lose something important"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "38. To 'decide' is to:",
-            options: [
-                "(A) Guess the answer without thinking",
-                "(B) Come to a resolution after consideration",
-                "(C) Forget what you were going to do",
-                "(D) Wait for someone else to choose"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "39. To 'commit' means to:",
-            options: [
-                "(A) Run away from a difficult problem",
-                "(B) Make a joke to make people laugh",
-                "(C) Pledge or bind oneself to a certain course",
-                "(D) Sleep for a very long time"
-            ],
-            answer: 2 // C
-        },
-        {
-            q: "40. If two things are 'similar', they are:",
-            options: [
-                "(A) Exactly the same in every way",
-                "(B) Completely different from each other",
-                "(C) Opposite in meaning or appearance",
-                "(D) Alike but not identical"
-            ],
-            answer: 3 // D
-        },
-        {
-            q: "41. What does 'secure' mean?",
-            options: [
-                "(A) Loose and likely to fall off",
-                "(B) Fixed or fastened so it will not be lost",
-                "(C) Dangerous and risky to use",
-                "(D) Scary and frightening to look at"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "42. To 'invent' means to:",
-            options: [
-                "(A) Find something that was lost",
-                "(B) Create or design something that has not existed before",
-                "(C) Destroy something that is old",
-                "(D) Buy something from a store"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "43. Something 'effective' is:",
-            options: [
-                "(A) Successful in producing a desired result",
-                "(B) Useless and does not work at all",
-                "(C) Broken and needs to be fixed",
-                "(D) Cheap and easy to break"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "44. To 'graze' means to:",
-            options: [
-                "(A) Sleep in a warm place",
-                "(B) Eat grass in a field",
-                "(C) Run very fast in a race",
-                "(D) Swim across a river"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "45. To 'protect' means to:",
-            options: [
-                "(A) Attack someone suddenly",
-                "(B) Keep safe from harm or injury",
-                "(C) Ignore a warning sign",
-                "(D) Lose a valuable item"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "46. A 'border' is:",
-            options: [
-                "(A) The center point of a city",
-                "(B) A line separating two geographical areas",
-                "(C) A deep hole in the ground",
-                "(D) A mountain that is hard to climb"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "47. 'Local' means:",
-            options: [
-                "(A) Relating to a particular area or neighborhood",
-                "(B) Coming from a very distant country",
-                "(C) Relating to the entire world",
-                "(D) Existing only in the past"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "48. An 'origin' is:",
-            options: [
-                "(A) The final result of a process",
-                "(B) The point or place where something begins",
-                "(C) The middle part of a journey",
-                "(D) The reason why something failed"
-            ],
-            answer: 1 // B
-        },
-        {
-            q: "49. To 'weave' means to:",
-            options: [
-                "(A) Form fabric by interlacing threads",
-                "(B) Paint a picture using bright colors",
-                "(C) Carve a statue out of stone",
-                "(D) Melt metal to make a tool"
-            ],
-            answer: 0 // A
-        },
-        {
-            q: "50. To 'get along' means to:",
-            options: [
-                "(A) Argue and fight constantly",
-                "(B) Run away to a different place",
-                "(C) Have a harmonious or friendly relationship",
-                "(D) Be alone and avoid people"
-            ],
-            answer: 2 // C
+            type: "number",
+            text: "【第三關：圖形切割】<br>甲板長 8 公尺、寬 5 公尺。<br>中間破了一個邊長 2 公尺的「正方形」破洞。<br>請問剩下的面積是多少？",
+            visual: `<div style="width:200px; height:125px; background:#444; position:relative; margin:0 auto; border:3px solid #888;">
+                        <div style="width:50px; height:50px; background:#000; position:absolute; top:35px; left:75px; border:2px dashed #ff6b6b; display:flex; justify-content:center; align-items:center; color:#ff6b6b; font-size:0.9rem;">破洞</div>
+                     </div>`,
+            answer: 36,
+            hint: "大長方形面積 - 小正方形面積。",
+            explanation: "大面積：8 x 5 = 40。<br>破洞面積：2 x 2 = 4。<br>剩下：40 - 4 = 36 平方公尺。"
         }
     ];
 
-    function loadQuiz() {
-        const container = document.getElementById('questions-container');
-        questions.forEach((q, index) => {
-            const block = document.createElement('div');
-            block.className = 'question-block';
-            block.id = `q${index}`;
+    let currentQIndex = 0;
+    let score = 0;
+    let isRetry = false;
 
-            let optionsHtml = '';
-            q.options.forEach((opt, optIndex) => {
-                optionsHtml += `
-                    <label class="option-label" id="label-q${index}-o${optIndex}">
-                        <input type="radio" name="q${index}" value="${optIndex}" onchange="updateProgress()">
-                        <div>${opt}</div>
-                    </label>
-                `;
+    // Enter Key Support
+    document.getElementById('user-answer').addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            checkAnswer();
+            // 在平板上，按下 Enter 後建議讓輸入框失去焦點，以收起鍵盤，讓學生看到 Feedback
+            document.getElementById('user-answer').blur();
+        }
+    });
+
+    function startGame() {
+        document.getElementById('intro-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        isRetry = false;
+        const q = questions[currentQIndex];
+        
+        document.getElementById('btn-next').classList.add('hidden');
+        document.getElementById('feedback-box').style.display = 'none';
+        document.getElementById('feedback-box').className = 'feedback';
+        document.getElementById('user-answer').disabled = false;
+        document.getElementById('btn-num-submit').disabled = false;
+        document.getElementById('user-answer').value = ''; // Clear input
+
+        // Progress
+        const progressPct = ((currentQIndex) / questions.length) * 100;
+        document.getElementById('progress-fill').style.width = `${progressPct}%`;
+        
+        // Level Badge
+        const badge = document.getElementById('level-badge');
+        if(currentQIndex < 2) badge.innerText = "第一關：運算中心";
+        else if(currentQIndex < 5) badge.innerText = "第二關：角度導航";
+        else badge.innerText = "第三關：面積測量";
+
+        // Render Text & Visual
+        document.getElementById('q-text').innerHTML = q.text;
+        document.getElementById('q-visual').innerHTML = q.visual;
+        
+        // Input Logic
+        const numInput = document.getElementById('input-number');
+        const optInput = document.getElementById('input-options');
+
+        if (q.type === 'number') {
+            numInput.classList.remove('hidden');
+            optInput.classList.add('hidden');
+            // 平板上不要自動 focus，避免鍵盤直接彈出遮住題目
+        } else {
+            numInput.classList.add('hidden');
+            optInput.classList.remove('hidden');
+            optInput.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkOption(opt, btn);
+                optInput.appendChild(btn);
             });
-
-            block.innerHTML = `
-                <div class="question-text">${q.q}</div>
-                <div class="options">
-                    ${optionsHtml}
-                </div>
-                <div class="feedback-text" id="feedback-q${index}"></div>
-            `;
-            container.appendChild(block);
-        });
+        }
     }
 
-    function updateProgress() {
-        const total = questions.length;
-        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-        const percent = (answered / total) * 100;
-        document.getElementById('progressBar').style.width = percent + '%';
+    function showHint() {
+        const q = questions[currentQIndex];
+        alert("💡 大副提示：\n" + q.hint.replace(/<br>/g, "\n"));
     }
 
-    function submitQuiz() {
-        let score = 0;
-        let answeredCount = 0;
-        
-        // Disable button
-        const submitBtn = document.querySelector('.submit-btn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Grading...';
-        
-        // Fill progress bar to 100% on submit
-        document.getElementById('progressBar').style.width = '100%';
+    function checkAnswer() {
+        const userField = document.getElementById('user-answer');
+        if(!userField.value) {
+            alert("請先輸入數字答案喔！");
+            return;
+        }
+        const userVal = parseFloat(userField.value);
+        const q = questions[currentQIndex];
+        handleResult(userVal === q.answer);
+    }
 
-        questions.forEach((q, index) => {
-            const selected = document.querySelector(`input[name="q${index}"]:checked`);
-            const feedback = document.getElementById(`feedback-q${index}`);
+    function checkOption(selectedVal, btnElement) {
+        document.querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+        const q = questions[currentQIndex];
+        handleResult(selectedVal === q.answer);
+    }
+
+    function handleResult(isCorrect) {
+        const fbBox = document.getElementById('feedback-box');
+        const q = questions[currentQIndex];
+        
+        fbBox.style.display = 'block';
+        
+        if (isCorrect) {
+            const points = isRetry ? 5 : 10;
+            score += points;
+            document.getElementById('score-display').innerText = `積分: ${score}`;
+
+            fbBox.innerHTML = `<strong>✅ 正確！(+${points}分)</strong><br>${q.explanation}`;
+            fbBox.classList.add('correct');
+            fbBox.classList.remove('wrong');
             
-            // Mark the correct answer green
-            const correctLabel = document.getElementById(`label-q${index}-o${q.answer}`);
-            correctLabel.classList.add('correct-answer');
-
-            if (selected) {
-                answeredCount++;
-                const userVal = parseInt(selected.value);
-                if (userVal === q.answer) {
-                    score += 2;
-                    feedback.style.display = 'block';
-                    feedback.style.backgroundColor = '#d4edda'; // Light green bg
-                    feedback.style.color = '#155724';
-                    feedback.innerText = '✓ Correct';
-                } else {
-                    // Mark wrong answer red
-                    const wrongLabel = document.getElementById(`label-q${index}-o${userVal}`);
-                    wrongLabel.classList.add('wrong-user-answer');
-                    feedback.style.display = 'block';
-                    feedback.style.backgroundColor = '#f8d7da'; // Light red bg
-                    feedback.style.color = '#721c24';
-                    feedback.innerText = '✗ Incorrect';
-                }
-            } else {
-                 feedback.style.display = 'block';
-                 feedback.style.backgroundColor = '#fff3cd'; // Light yellow bg
-                 feedback.style.color = '#856404';
-                 feedback.innerText = '⚠ Not Answered';
-            }
-        });
-
-        // Show results
-        const name = document.getElementById('studentName').value || 'Student';
-        document.getElementById('student-display').innerHTML = `Great job, ${name}!`;
-        
-        // Animate Score
-        animateValue("score-value", 0, score, 1500);
-        
-        const message = document.getElementById('message');
-        if (score === 100) message.innerText = "Perfect Score! Amazing! 🎉";
-        else if (score >= 80) message.innerText = "Excellent work! Keep it up! 🌟";
-        else if (score >= 60) message.innerText = "Good job! Review the ones you missed. 👍";
-        else message.innerText = "Keep practicing! You'll get better. 💪";
-
-        document.getElementById('result-area').style.display = 'block';
-        
-        // Scroll to results
-        setTimeout(() => {
-            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+            // Lock UI
+            document.getElementById('user-answer').disabled = true;
+            document.getElementById('btn-num-submit').disabled = true;
+            document.querySelectorAll('.btn-option').forEach(b => b.disabled = true);
+            document.getElementById('btn-next').classList.remove('hidden');
+            
+        } else {
+            isRetry = true;
+            fbBox.innerHTML = `<strong>⚠️ 運算誤差</strong><br>再試一次，或者點選「呼叫大副提示」。`;
+            fbBox.classList.add('wrong');
+            fbBox.classList.remove('correct');
+        }
     }
 
-    function animateValue(id, start, end, duration) {
-        if (start === end) return;
-        const range = end - start;
-        let current = start;
-        const increment = end > start ? 1 : -1;
-        const stepTime = Math.abs(Math.floor(duration / range));
-        const obj = document.getElementById(id);
+    function nextQuestion() {
+        currentQIndex++;
+        if (currentQIndex < questions.length) {
+            loadQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('progress-fill').style.width = '100%';
         
-        const timer = setInterval(function() {
-            current += increment;
-            obj.innerHTML = current;
-            if (current == end) {
-                clearInterval(timer);
-            }
-        }, stepTime);
+        const maxScore = questions.length * 10;
+        let rank = "見習水手 ⚓";
+        let color = "#888";
+
+        if(score >= maxScore * 0.9) { rank = "傳奇艦長 🏆"; color = "#ffd700"; }
+        else if(score >= maxScore * 0.7) { rank = "資深大副 🥇"; color = "#c0c0c0"; }
+        else if(score >= maxScore * 0.5) { rank = "正式船員 🥈"; color = "#cd7f32"; }
+
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-rank').innerHTML = `獲得稱號：<span style="color:${color}; font-weight:bold;">${rank}</span>`;
     }
-
-    function reviewQuiz() {
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    // Initialize
-    window.onload = loadQuiz;
-
 </script>
 
 </body>
